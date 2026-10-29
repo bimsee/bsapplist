@@ -9,8 +9,10 @@ BIMSee 的 `帮助 → 检查更新` 和启动后 24 小时一次的静默检查
 
 ```
 applist_win.json             Windows 主程序更新清单
-packages/win64/              Windows 发布包（BIMSeePro_<版本>.zip）
+packages/win64/              发布包留档（BIMSeePro_<版本>.zip，不参与下载）
 ```
+
+实际下载地址是 Gitee 发行版附件（见下方 `download` 字段说明）。
 
 `applist_linux.json` / `applist_macos.json` 为预留文件名，对应平台有发布包后再添加。
 
@@ -33,8 +35,11 @@ packages/win64/              Windows 发布包（BIMSeePro_<版本>.zip）
 - `version`：三段式 `X.Y.Z`，必须和发布包里
   `apps/bimsee/BimseeVersion.h` 的 `BIMSEE_PRODUCT_VERSION_STR` 一致；
   主程序按它判断是否有新版本。
-- `download`：相对本清单路径（推荐），或绝对 URL。相对路径会按清单来源的镜像解析，
-  所以同一份清单在 GitHub 和 Gitee 上都能指向各自的包。
+- `download`：**Gitee 发行版附件的绝对地址**，例如
+  `https://gitee.com/bimsee/bsapplist/releases/download/v3.1.0/BIMSeePro_3.1.0.zip`。
+  不能用 `packages/...` 相对路径：Gitee 的 raw 接口对大于 1 MB 的文件要求登录，
+  匿名下载会返回 403（`large file require login for access`），而发行版附件可以匿名下载。
+  GitHub 与 Gitee 使用**同一份清单**，海外用户也从 Gitee 下载（包只有十几 MB）。
 - `sha256` / `size`：下载后校验，不匹配则拒绝安装（`size` 需为整数）。
 - `latest` 是必填对象；`schemaVersion`、`updated` 目前仅作标识，主程序不解析。
 
@@ -49,15 +54,29 @@ packages/win64/              Windows 发布包（BIMSeePro_<版本>.zip）
 
    包里只有主程序 + `ifcloader`；其他插件由 `bspluginlist` 单独安装。
 
-2. 把 ZIP 复制到 `packages/win64/`，取 SHA-256 和字节数：
+2. 在 Gitee 上建发行版（标签 `v<版本>`，如 `v3.1.0`），把 ZIP 作为**发行版附件**上传。
+   附件上传后形如：
+   `https://gitee.com/bimsee/bsapplist/releases/download/v3.1.0/BIMSeePro_3.1.0.zip`
+
+   也可以走 API（需要带 `projects` 权限的私人令牌）：
 
    ```bash
-   sha256sum packages/win64/BIMSeePro_<版本>.zip
-   stat -c%s packages/win64/BIMSeePro_<版本>.zip
+   curl -X POST "https://gitee.com/api/v5/repos/bimsee/bsapplist/releases?access_token=<令牌>" \
+        -H "Content-Type: application/json" \
+        -d '{"tag_name":"v3.1.0","name":"BIMSeePro 3.1.0","target_commitish":"main"}'
+   curl -X POST "https://gitee.com/api/v5/repos/bimsee/bsapplist/releases/<release_id>/attach_files?access_token=<令牌>" \
+        -F "file=@BIMSeePro_<版本>.zip"
    ```
 
-3. 更新 `applist_win.json` 的 `latest`（`version` / `releaseNotes` /
-   `download` / `sha256` / `size`），同时改 `updated` 日期。
+3. 取 SHA-256 和字节数，更新 `applist_win.json` 的 `latest`
+   （`version` / `releaseNotes` / `download` / `sha256` / `size`），同时改 `updated` 日期：
+
+   ```bash
+   sha256sum BIMSeePro_<版本>.zip
+   stat -c%s BIMSeePro_<版本>.zip
+   ```
+
+   可另存一份到 `packages/win64/` 随仓库留档（**不参与下载**）。
 
 4. 提交并推送到**两个**远程，保持镜像一致（中国大陆用户走 Gitee）：
 

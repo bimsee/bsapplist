@@ -4,7 +4,7 @@
   "latest": {
     "version": "3.1.0",
     "releaseNotes": "新增插件管理（安装/更新/卸载）与主程序自动更新；插件列表支持按主程序版本判断兼容性；文件对话框可按格式选择加载插件。",
-    "download": "packages/win64/BIMSeePro_3.1.0.zip",
+    "download": "https://gitee.com/bimsee/bsapplist/releases/download/v3.1.0/BIMSeePro_3.1.0.zip",
     "sha256": "269b4a7296b70b539e7a2219304a6a1cc34d6e23c51ea4f4a0c4c24cb7ee1350",
     "size": 16463452
   }
