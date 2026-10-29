@@ -1,0 +1,8 @@
+# Release packages are binary; never let Git convert their line endings.
+*.zip binary
+*.7z binary
+*.exe binary
+
+# Manifests are read by BIMSee as UTF-8 text with LF.
+*.json text eol=lf
+*.md text eol=lf
